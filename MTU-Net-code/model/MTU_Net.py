@@ -154,75 +154,19 @@ class res_UNet(nn.Module):
         out = self.conv4_0(self.pool(x3_0))
         # (4,256,16,16)
 
-
-        # out =self.vit1(out)
-        #
-        # out  = rearrange(out, "b (x y) c -> b c x y", x=64, y=64)
-
-        # out = torch.cat([rearrange(out , "b (x y) c -> b c x y", x=64, y=64), rearrange(self.vit2(x3_0) , "b (x y) c -> b c x y", x=64, y=64)],1)
-        # out = self.conv4_1(out)
-
-        # out = torch.cat([self.vit1(out),self.vit2(x3_0)],2)
-        # out = rearrange(out, "b (x y) c -> b c x y", x=64, y=64)
-
         out = torch.cat([rearrange(self.vit2(x3_0), "b (x y) c -> b c x y", x=64, y=64),rearrange(self.vit3(x2_0), "b (x y) c -> b c x y", x=64, y=64),rearrange(self.vit4(x1_0), "b (x y) c -> b c x y", x=64, y=64),rearrange(self.vit5(x0_0), "b (x y) c -> b c x y", x=64, y=64),out], 1)
-        # out = torch.cat([rearrange(self.vit5(x0_0), "b (x y) c -> b c x y", x=64, y=64),out], 1)
-
-        # out1 = self.vit2(x3_0)
-        # out=torch.cat([self.up(rearrange(out1, "b (x y) c -> b c x y", x=64, y=64)), self.up(out)], 1)
+    
         out = self.conv3_1_1(out)
 
-        # out = torch.cat([self.up(out),self.up4(rearrange(self.vit3(x2_0), "b (x y) c -> b c x y", x=64, y=64))],1)
-        # print(out.shape)
+   
         out = self.conv3_1(torch.cat([x3_0, self.up(out)], 1))
-        # out = self.conv2_2(out)
+  
         out = self.conv2_2(torch.cat([x2_0, self.up(out)], 1))
 
-        # out = torch.cat([self.up(out),self.up8(rearrange(self.vit4(x1_0), "b (x y) c -> b c x y", x=64, y=64))],1)
-        # print(out.shape)
-
-        # out = self.conv1_3(out)
-
         out = self.conv1_3(torch.cat([x1_0, self.up(out)], 1))
-
-
-        # out = torch.cat([self.up(out),self.up16(rearrange(self.vit5(x0_0), "b (x y) c -> b c x y", x=64, y=64))],1)
-        # print(out.shape)
-
-        # out = self.conv0_4(out)
+        
         out = self.conv0_4(torch.cat([x0_0, self.up(out)], 1))
 
         out = self.final(out)
-        # out = self.final2(out)
-        # out = self.head(out)
 
         return out
-
-
-
-
-########################################################
-# ###2.测试ASKCResUNet
-# if __name__ == '__main__':
-#     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu") # 让torch判断是否使用GPU，建议使用GPU环境，因为会快很多
-#     in_channels=3
-#     model = res_UNet( num_classes=1,input_channels=in_channels, block=Res_block, num_blocks=[2,2,2,2],nb_filter=[16, 32, 64, 128, 256])
-#     model=model.cuda()
-#     DATA = torch.randn(32,3,256,256).to(DEVICE)
-#
-#     start = time.time()
-#     output=model(DATA)
-#     end = time.time()
-#
-#     print('time:',end-start)
-#     print("output:",np.shape(output))
-#########################################################
-
-# if __name__ == '__main__':
-#     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # 让torch判断是否使用GPU，建议使用GPU环境，因为会快很多
-#     input = torch.randn(1, 3, 256, 256).cuda()
-#     in_channels=3
-#     model = res_UNet( num_classes=1,input_channels=in_channels, block=Res_CBAM_block, num_blocks=[2,2,2,2],nb_filter=[16, 32, 64, 128, 256])
-#     model=model.cuda()
-#     flops, params = profile(model, inputs=(input,), verbose=True)
-#     print('flops:', flops, 'params:', params)
